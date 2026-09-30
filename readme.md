@@ -4,6 +4,8 @@ See and promote your app's releases across **Google Play**, the **App Store**, t
 
 Panoptes shows which version is live on each store's tracks (internal, alpha, beta, production) and lets you promote a build to the next track. It comes as a terminal CLI and as a Compose desktop app, both written in Kotlin Multiplatform.
 
+![Panoptes desktop dashboard showing each store's tracks, versions and promote buttons](docs/screenshot.png)
+
 ## Features
 
 - **One dashboard for every store.** See the version and status (live, in review, …) of each track, and spot stores that are behind.
