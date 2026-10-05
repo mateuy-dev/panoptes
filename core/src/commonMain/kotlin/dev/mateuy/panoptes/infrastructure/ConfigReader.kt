@@ -17,12 +17,14 @@ data class AppIdentifiers(
     val appStoreBundleId: String = "",
     val windowsStoreId: String = "",
     val snapName: String = "",
+    val dmgReleaseUrl: String = "",
 ) {
     fun forStore(storeKey: String): String = when (storeKey) {
         "googleplay" -> googlePlayPackageName
         "appstore" -> appStoreBundleId
         "microsoft" -> windowsStoreId
         "snap" -> snapName
+        "dmg" -> dmgReleaseUrl
         else -> error("Unknown store: $storeKey")
     }
 
@@ -31,6 +33,7 @@ data class AppIdentifiers(
         "appstore" -> copy(appStoreBundleId = value)
         "microsoft" -> copy(windowsStoreId = value)
         "snap" -> copy(snapName = value)
+        "dmg" -> copy(dmgReleaseUrl = value)
         else -> error("Unknown store: $storeKey")
     }
 }

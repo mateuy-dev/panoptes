@@ -228,6 +228,7 @@ fun importFromEnv(credentialStore: CredentialStore, configReader: ConfigReader) 
     println("  - Google Play package name")
     println("  - Microsoft Store product ID")
     println("  - Snap name")
+    println("  - DMG release URL")
     println("Run Panoptes normally and choose [3] Settings to complete these.")
 }
 

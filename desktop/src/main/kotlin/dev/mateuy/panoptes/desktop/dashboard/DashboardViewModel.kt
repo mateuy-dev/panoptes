@@ -3,6 +3,7 @@ package dev.mateuy.panoptes.desktop.dashboard
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.mateuy.panoptes.application.PromoteBuildUseCase
+import dev.mateuy.panoptes.application.StoreResult
 import dev.mateuy.panoptes.application.ViewVersionsUseCase
 import dev.mateuy.panoptes.domain.model.Track
 import dev.mateuy.panoptes.domain.model.TrackVersion
@@ -112,6 +113,7 @@ class DashboardViewModel(
     val state: StateFlow<DashboardUiState> = _state.asStateFlow()
 
     private var refreshJob: Job? = null
+    private val storeRefreshJobs = mutableMapOf<String, Job>()
 
     init {
         refresh()
@@ -119,18 +121,31 @@ class DashboardViewModel(
 
     fun refresh() {
         refreshJob?.cancel()
+        storeRefreshJobs.values.forEach { it.cancel() }
+        storeRefreshJobs.clear()
         refreshJob = viewModelScope.launch {
-            viewVersions.execute().collect { result ->
-                updateStore(result.storeName) {
-                    it.copy(
-                        isLoading = result.isLoading,
-                        error = result.error,
-                        versions = result.versions.orEmpty().associateBy(TrackVersion::track),
-                    )
-                }
-            }
+            viewVersions.execute().collect(::applyResult)
             _state.update { it.copy(lastSync = LocalTime.now()) }
         }
+    }
+
+    /** Reloads only [storeName], leaving the other stores as they are. */
+    private fun refreshStore(storeName: String) {
+        // A full refresh still in flight may have read this store before the change, so start it over
+        if (refreshJob?.isActive == true) return refresh()
+
+        storeRefreshJobs[storeName]?.cancel()
+        storeRefreshJobs[storeName] = viewModelScope.launch {
+            viewVersions.execute(storeName).collect(::applyResult)
+        }
+    }
+
+    private fun applyResult(result: StoreResult) = updateStore(result.storeName) {
+        it.copy(
+            isLoading = result.isLoading,
+            error = result.error,
+            versions = result.versions.orEmpty().associateBy(TrackVersion::track),
+        )
     }
 
     fun requestPromotion(storeName: String, from: Track) {
@@ -163,7 +178,7 @@ class DashboardViewModel(
                     ),
                 )
             }
-            if (result.isSuccess) refresh()
+            if (result.isSuccess) refreshStore(promotion.storeName)
         }
     }
 

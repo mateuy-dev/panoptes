@@ -37,6 +37,7 @@ val CREDENTIAL_FIELDS = listOf(
     CredentialField("microsoft", "clientSecret", "Azure Client Secret", CredentialField.Kind.SECRET),
     CredentialField("snap", "snapName", "Snap Name", hint = "my-snap", isIdentifier = true),
     CredentialField("snap", "macaroon", "Snapcraft Credentials (SNAPCRAFT_STORE_CREDENTIALS)", CredentialField.Kind.SECRET),
+    CredentialField("dmg", "releaseUrl", "DMG Release URL", hint = "https://example.com/api/desktop_releases/mac-arm64", isIdentifier = true),
 )
 
 /** Whether [field] can be changed: credentials can't when they come from a `.env`. */

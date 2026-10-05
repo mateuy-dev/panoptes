@@ -1,6 +1,7 @@
 package dev.mateuy.panoptes.di
 
 import dev.mateuy.panoptes.adapter.appstore.AppStoreAdapter
+import dev.mateuy.panoptes.adapter.dmg.DmgAdapter
 import dev.mateuy.panoptes.adapter.googleplay.GooglePlayAdapter
 import dev.mateuy.panoptes.adapter.microsoft.MicrosoftAdapter
 import dev.mateuy.panoptes.adapter.snap.SnapAdapter
@@ -32,6 +33,9 @@ fun appModule(project: Project, credentialStore: CredentialStore) = module {
     single<StoreAdapter>(qualifier = org.koin.core.qualifier.named("snap")) {
         SnapAdapter(get(), get(), get())
     }
+    single<StoreAdapter>(qualifier = org.koin.core.qualifier.named("dmg")) {
+        DmgAdapter(get(), get())
+    }
 
     single {
         listOf(
@@ -39,6 +43,7 @@ fun appModule(project: Project, credentialStore: CredentialStore) = module {
             get<StoreAdapter>(qualifier = org.koin.core.qualifier.named("appstore")),
             get<StoreAdapter>(qualifier = org.koin.core.qualifier.named("microsoft")),
             get<StoreAdapter>(qualifier = org.koin.core.qualifier.named("snap")),
+            get<StoreAdapter>(qualifier = org.koin.core.qualifier.named("dmg")),
         )
     }
 

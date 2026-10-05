@@ -18,7 +18,10 @@ data class StoreResult(
 class ViewVersionsUseCase(
     private val adapters: List<StoreAdapter>,
 ) {
-    fun execute(): Flow<StoreResult> = channelFlow {
+    /** Loads the versions of every store, or only of [storeName] when given. */
+    fun execute(storeName: String? = null): Flow<StoreResult> = channelFlow {
+        val adapters = if (storeName == null) adapters else adapters.filter { it.storeName == storeName }
+
         // Emit loading states first
         adapters.forEach { adapter ->
             send(StoreResult(adapter.storeName, null, null))

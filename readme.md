@@ -1,6 +1,6 @@
 # Panoptes
 
-See and promote your app's releases across **Google Play**, the **App Store**, the **Microsoft Store** and the **Snap Store** from one place.
+See and promote your app's releases across **Google Play**, the **App Store**, the **Microsoft Store**, the **Snap Store** and a self-hosted **macOS DMG** from one place.
 
 Panoptes shows which version is live on each store's tracks (internal, alpha, beta, production) and lets you promote a build to the next track. It comes as a terminal CLI and as a Compose desktop app, both written in Kotlin Multiplatform.
 
@@ -19,6 +19,7 @@ Panoptes shows which version is live on each store's tracks (internal, alpha, be
 | App Store       | ✓             | ✓ (submits for review) |
 | Microsoft Store | ✓             | ✗ (the API needs the package re-uploaded) |
 | Snap Store      | ✓             | ✓       |
+| macOS DMG       | ✓             | ✗ (self-hosted: upload the DMG to your server) |
 
 ## Requirements
 
@@ -28,7 +29,7 @@ Panoptes shows which version is live on each store's tracks (internal, alpha, be
 ## Install
 
 ```sh
-make install     # installs `panoptes` and `panoptes-desktop` into ~/.local/bin
+make install     # installs `panoptes` and `panoptes-cli` into ~/.local/bin
 make uninstall
 ```
 
@@ -39,8 +40,8 @@ Set `PREFIX=/some/path` to install somewhere else.
 Run Panoptes from your app's folder:
 
 ```sh
-panoptes            # terminal CLI
-panoptes-desktop    # desktop app
+panoptes        # desktop app
+panoptes-cli    # terminal CLI
 ```
 
 From a checkout, without installing:
@@ -64,6 +65,7 @@ googlePlayPackageName = "com.example.app"
 appStoreBundleId      = "com.example.app"
 windowsStoreId        = "9XXXXXXXXXXX"
 snapName              = "my-snap"
+dmgReleaseUrl         = "https://example.com/api/desktop_releases/mac-arm64"
 ```
 
 The settings screen writes this file on the first run.
@@ -80,6 +82,7 @@ Panoptes reads credentials from one of two places.
 | App Store       | App Store Connect API issuer ID, key ID and `.p8` key |
 | Microsoft Store | Azure AD tenant ID, client ID and client secret (Partner Center app) |
 | Snap Store      | `snapcraft export-login` output |
+| macOS DMG       | Nothing: the release URL is public |
 
 **2. `.env` mode.** If the project's `.env` sets any of the variables below, Panoptes decrypts it with `dotenvx get` and uses those credentials read-only, with no master password. These are the same variable names a typical CI setup uses:
 
@@ -90,7 +93,7 @@ Panoptes reads credentials from one of two places.
 | `MS_STORE_TENANT_ID`, `MS_STORE_CLIENT_ID`, `MS_STORE_CLIENT_SECRET` | Microsoft Store |
 | `SNAPCRAFT_STORE_CREDENTIALS` | Snap Store |
 
-To copy the environment's credentials into the encrypted store instead, run `panoptes --import-env`.
+To copy the environment's credentials into the encrypted store instead, run `panoptes-cli --import-env`.
 
 > Never commit `credentials.enc`, a plain `.env`, or `.env.keys`.
 

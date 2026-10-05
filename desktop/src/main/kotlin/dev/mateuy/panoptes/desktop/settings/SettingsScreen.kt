@@ -51,6 +51,7 @@ private val STORE_TITLES = mapOf(
     "appstore" to "App Store",
     "microsoft" to "Microsoft Store",
     "snap" to "Snap Store",
+    "dmg" to "macOS DMG",
 )
 
 @OptIn(ExperimentalMaterial3Api::class)

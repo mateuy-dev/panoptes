@@ -14,7 +14,7 @@ import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 
 /**
- * Usage: `panoptes [--project <dir>] [--import-env]`. The project is the working directory (or the closest parent
+ * Usage: `panoptes-cli [--project <dir>] [--import-env]`. The project is the working directory (or the closest parent
  * with a `.panoptes/` folder or `.env`) unless `--project` or `PANOPTES_PROJECT` names one.
  */
 fun main(args: Array<String> = emptyArray()) {

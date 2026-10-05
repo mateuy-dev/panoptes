@@ -1,6 +1,6 @@
 # Installs Panoptes for the current user. Run it from any project folder afterwards:
-#   panoptes           terminal CLI (needs Java 21+ on PATH)
-#   panoptes-desktop   desktop app (bundles its own Java runtime)
+#   panoptes       desktop app (bundles its own Java runtime)
+#   panoptes-cli   terminal CLI (needs Java 21+ on PATH)
 PREFIX ?= $(HOME)/.local
 BIN_DIR := $(PREFIX)/bin
 APP_DIR := $(PREFIX)/share/panoptes
@@ -17,10 +17,10 @@ install: build
 	mkdir -p "$(APP_DIR)" "$(BIN_DIR)"
 	cp $(JAR) "$(APP_DIR)/panoptes.jar"
 	cp -r $(DESKTOP_APP) "$(APP_DIR)/desktop"
-	printf '#!/bin/sh\nexec java -jar "%s/panoptes.jar" "$$@"\n' "$(APP_DIR)" > "$(BIN_DIR)/panoptes"
-	printf '#!/bin/sh\nexec "%s/desktop/bin/Panoptes" "$$@"\n' "$(APP_DIR)" > "$(BIN_DIR)/panoptes-desktop"
-	chmod +x "$(BIN_DIR)/panoptes" "$(BIN_DIR)/panoptes-desktop"
-	@echo "Installed panoptes and panoptes-desktop in $(BIN_DIR)"
+	printf '#!/bin/sh\nexec "%s/desktop/bin/Panoptes" "$$@"\n' "$(APP_DIR)" > "$(BIN_DIR)/panoptes"
+	printf '#!/bin/sh\nexec java -jar "%s/panoptes.jar" "$$@"\n' "$(APP_DIR)" > "$(BIN_DIR)/panoptes-cli"
+	chmod +x "$(BIN_DIR)/panoptes" "$(BIN_DIR)/panoptes-cli"
+	@echo "Installed panoptes and panoptes-cli in $(BIN_DIR)"
 
 uninstall:
-	rm -rf "$(APP_DIR)" "$(BIN_DIR)/panoptes" "$(BIN_DIR)/panoptes-desktop"
+	rm -rf "$(APP_DIR)" "$(BIN_DIR)/panoptes" "$(BIN_DIR)/panoptes-cli"

@@ -309,6 +309,7 @@ private fun String.avatar(): Pair<String, Color> = when (this) {
     "App Store" -> "AS" to Color(0xFF0D84FF)
     "Microsoft Store" -> "MS" to Color(0xFF8B5CF6)
     "Snap Store" -> "SN" to Color(0xFFF05A22)
+    "macOS DMG" -> "DM" to Color(0xFF64748B)
     else -> split(' ').take(2).joinToString("") { it.take(1) }.uppercase() to PanoptesColors.Neutral
 }
 
