@@ -87,19 +87,35 @@ class GooglePlayAdapter(
         val pkg = packageName.ifEmpty { error("Package name not configured — set it in [3] Settings") }
         val tracks = withEdit(pkg) { editUrl, token -> fetchTracks(editUrl, token) }
 
-        return tracks.mapNotNull { track ->
-            val panoptesTrack = mapTrack(track.track) ?: return@mapNotNull null
+        val versions = mutableListOf<TrackVersion>()
+        for (track in tracks) {
+            val panoptesTrack = mapTrack(track.track) ?: continue
             // A track can hold several releases (e.g. a completed one plus a staged rollout); show the newest
-            val release = track.releases.maxByOrNull { it.highestVersionCode() ?: -1 } ?: return@mapNotNull null
-            val versionCode = release.highestVersionCode() ?: return@mapNotNull null
-            TrackVersion(
+            val release = track.releases.maxByOrNull { it.highestVersionCode() ?: -1 } ?: continue
+            val versionCode = release.highestVersionCode() ?: continue
+            val lifecycle = fetchLifecycleState(pkg, track.track, versionCode)
+            versions += TrackVersion(
                 track = panoptesTrack,
                 versionName = release.name ?: versionCode.toString(),
                 versionCode = versionCode,
-                status = mapStatus(release.status),
+                status = mapLifecycle(lifecycle) ?: mapStatus(release.status),
+                note = describeLifecycle(lifecycle),
             )
         }
+        return versions
     }
+
+    /**
+     * An edit reports a release as "completed" as soon as it is committed, even while Google is still reviewing it;
+     * only the release summaries say where it is in review. Null if they can't be read or don't list the release.
+     */
+    private suspend fun fetchLifecycleState(pkg: String, playTrack: String, versionCode: Long): String? = runCatching {
+        httpClient.get("$api/$pkg/tracks/$playTrack/releases") {
+            bearerAuth(getAccessToken())
+        }.bodyOrError<ReleaseSummariesResponse>("Google Play release summaries request").releases
+            .find { summary -> summary.activeArtifacts.any { it.versionCode == versionCode } }
+            ?.releaseLifecycleState
+    }.getOrNull()
 
     override suspend fun promote(fromTrack: Track, toTrack: Track) {
         val pkg = packageName.ifEmpty { error("Package name not configured") }
@@ -154,6 +170,21 @@ class GooglePlayAdapter(
         else -> ReleaseStatus.UNKNOWN
     }
 
+    /** Null when the release is live (or its state is unknown), so the edit's own status applies. */
+    private fun mapLifecycle(state: String?): ReleaseStatus? = when (state) {
+        "RELEASE_LIFECYCLE_STATE_DRAFT", "RELEASE_LIFECYCLE_STATE_NOT_SENT_FOR_REVIEW" -> ReleaseStatus.DRAFT
+        "RELEASE_LIFECYCLE_STATE_IN_REVIEW", "RELEASE_LIFECYCLE_STATE_APPROVED_NOT_PUBLISHED" -> ReleaseStatus.IN_REVIEW
+        "RELEASE_LIFECYCLE_STATE_NOT_APPROVED" -> ReleaseStatus.HALTED
+        else -> null
+    }
+
+    private fun describeLifecycle(state: String?): String? = when (state) {
+        "RELEASE_LIFECYCLE_STATE_NOT_SENT_FOR_REVIEW" -> "ready, but not sent for review yet"
+        "RELEASE_LIFECYCLE_STATE_APPROVED_NOT_PUBLISHED" -> "approved, waiting to be published manually"
+        "RELEASE_LIFECYCLE_STATE_NOT_APPROVED" -> "rejected in review"
+        else -> null
+    }
+
     @Serializable
     private data class ServiceAccountJson(
         @SerialName("client_email") val clientEmail: String,
@@ -190,4 +221,18 @@ class GooglePlayAdapter(
     ) {
         fun highestVersionCode(): Long? = versionCodes?.mapNotNull { it.toLongOrNull() }?.maxOrNull()
     }
+
+    @Serializable
+    private data class ReleaseSummariesResponse(
+        val releases: List<ReleaseSummaryDto> = emptyList(),
+    )
+
+    @Serializable
+    private data class ReleaseSummaryDto(
+        val releaseLifecycleState: String? = null,
+        val activeArtifacts: List<ArtifactSummaryDto> = emptyList(),
+    )
+
+    @Serializable
+    private data class ArtifactSummaryDto(val versionCode: Long? = null)
 }
