@@ -334,11 +334,10 @@ private fun TrackCell(
                         Text("build $build", color = PanoptesColors.TextSecondary, fontSize = 10.sp, fontFamily = FontFamily.Monospace)
                     }
                 }
+                val (container, content) = version.status.pillColors
+                Pill(version.status.label, version.status.icon, container, content)
                 if (behind != null) {
                     Pill(behind.label, Icons.Filled.Warning, PanoptesColors.Behind, Color.White)
-                } else {
-                    val (container, content) = version.status.pillColors
-                    Pill(version.status.label, version.status.icon, container, content)
                 }
                 if (promoteTo != null) PromoteButton(promoteTo, onPromote)
             }
